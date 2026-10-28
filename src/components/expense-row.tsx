@@ -1,6 +1,6 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { readableTextColor } from "@/lib/color";
+import { categoryFill, categoryLabel } from "@/lib/category-color";
 import { formatMoney } from "@/lib/money";
 import type { ExpenseRow as Expense } from "@/server/db/expenses";
 
@@ -16,12 +16,8 @@ export function ExpenseRow({ expense }: { expense: Expense }) {
     >
       <span
         aria-hidden
-        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground"
-        style={
-          expense.categoryColor
-            ? { backgroundColor: expense.categoryColor, color: readableTextColor(expense.categoryColor) }
-            : undefined
-        }
+        className="flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
+        style={{ backgroundColor: categoryFill(expense.categoryColor), color: categoryLabel(expense.categoryColor) }}
       >
         {(expense.categoryName ?? "?").charAt(0)}
       </span>

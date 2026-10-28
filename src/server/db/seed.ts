@@ -1,24 +1,25 @@
+import { sql } from "drizzle-orm";
 import type { Db } from "./client";
 import { categories } from "./schema";
 
-// Paul Tol "muted" palette: colour-blind-safe, tune visually in Phase 1.
+// Slots follow the validated palette order; the most common categories get the leading slots.
+// Eight coloured categories plus a neutral "Other" (no generated 9th hue).
 export const defaultCategories = [
-  { name: "Groceries", color: "#117733" },
-  { name: "Dining", color: "#CC6677" },
-  { name: "Transport", color: "#332288" },
-  { name: "Bills & Utilities", color: "#DDCC77" },
-  { name: "Housing", color: "#882255" },
-  { name: "Shopping", color: "#AA4499" },
-  { name: "Health", color: "#44AA99" },
-  { name: "Entertainment", color: "#88CCEE" },
-  { name: "Travel", color: "#999933" },
-  { name: "Other", color: "#DDDDDD" },
+  { name: "Groceries", color: "cat-1" },
+  { name: "Dining", color: "cat-2" },
+  { name: "Transport", color: "cat-3" },
+  { name: "Bills & Utilities", color: "cat-4" },
+  { name: "Shopping", color: "cat-5" },
+  { name: "Health", color: "cat-6" },
+  { name: "Entertainment", color: "cat-7" },
+  { name: "Travel", color: "cat-8" },
+  { name: "Other", color: "cat-other" },
 ] as const;
 
-/** Inserts missing default categories; safe to run repeatedly. */
+/** Inserts missing default categories and refreshes their colours; safe to run repeatedly. */
 export function seedDefaults(db: Db) {
   db.insert(categories)
     .values(defaultCategories.map((c) => ({ ...c, isDefault: true })))
-    .onConflictDoNothing({ target: categories.name })
+    .onConflictDoUpdate({ target: categories.name, set: { color: sql`excluded.color`, isDefault: true } })
     .run();
 }

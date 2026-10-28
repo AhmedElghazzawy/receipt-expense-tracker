@@ -17,10 +17,3 @@ function contrast(a: number, b: number): number {
 export function contrastRatio(aHex: string, bHex: string): number {
   return contrast(luminance(aHex), luminance(bHex));
 }
-
-/** Black or white, whichever reads better on the given background. */
-export function readableTextColor(backgroundHex: string): "#000000" | "#ffffff" {
-  if (!/^#[0-9a-f]{6}$/i.test(backgroundHex)) return "#ffffff";
-  const bg = luminance(backgroundHex);
-  return contrast(bg, 0) >= contrast(bg, 1) ? "#000000" : "#ffffff";
-}

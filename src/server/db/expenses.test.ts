@@ -9,6 +9,7 @@ import {
   listCategories,
   listExpenses,
   monthTotals,
+  totalBetween,
   updateExpense,
 } from "./expenses";
 import { seedDefaults } from "./seed";
@@ -107,10 +108,17 @@ describe("totals", () => {
 
   it("totals per category for one currency, including uncategorised", () => {
     expect(categoryTotals(db, "2026-10", "TRY")).toEqual([
-      { categoryId: groceries, name: "Groceries", color: "#117733", totalMinor: 3050, count: 2 },
-      { categoryId: dining, name: "Dining", color: "#CC6677", totalMinor: 500, count: 1 },
+      { categoryId: groceries, name: "Groceries", color: "cat-1", totalMinor: 3050, count: 2 },
+      { categoryId: dining, name: "Dining", color: "cat-2", totalMinor: 500, count: 1 },
       { categoryId: null, name: null, color: null, totalMinor: 300, count: 1 },
     ]);
+  });
+
+  it("sums a half-open date range for one currency", () => {
+    expect(totalBetween(db, "2026-10-01", "2026-11-01", "TRY")).toBe(3850);
+    expect(totalBetween(db, "2026-10-15", "2026-10-15", "TRY")).toBe(0);
+    expect(totalBetween(db, "2026-11-01", "2026-11-02", "TRY")).toBe(7777);
+    expect(totalBetween(db, "2020-01-01", "2020-02-01", "TRY")).toBe(0);
   });
 
   it("returns empty arrays for an empty month", () => {

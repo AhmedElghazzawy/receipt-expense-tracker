@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { currencies } from "@/lib/money";
+import { categoryFill } from "@/lib/category-color";
 import { cn } from "@/lib/utils";
 import { type FormValues, type SaveState, removeExpense, saveExpense } from "./actions";
 
@@ -139,7 +140,7 @@ export function ExpenseForm({
                   "peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50",
                 )}
               >
-                {c.color && <span aria-hidden className="size-2.5 rounded-full" style={{ backgroundColor: c.color }} />}
+                {c.color && <span aria-hidden className="size-2.5 rounded-full" style={{ backgroundColor: categoryFill(c.color) }} />}
                 {c.name}
               </span>
             </label>

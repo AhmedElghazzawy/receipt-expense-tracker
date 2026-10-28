@@ -8,6 +8,7 @@ import { ExpenseRow } from "@/components/expense-row";
 import { currentMonth, formatDayLabel, formatMonth, shiftMonth, todayIso } from "@/lib/dates";
 import { type ListFilters, listHref, parseListFilters } from "@/lib/expense-filters";
 import { formatMoney } from "@/lib/money";
+import { categoryFill } from "@/lib/category-color";
 import { cn } from "@/lib/utils";
 import { getDb } from "@/server/db/client";
 import { type ExpenseRow as Expense, listCategories, listExpenses } from "@/server/db/expenses";
@@ -56,7 +57,7 @@ async function ExpensesView({ searchParams }: { searchParams: PageProps<"/expens
                       active ? "border-primary bg-accent text-accent-foreground" : "bg-card hover:bg-secondary",
                     )}
                   >
-                    {c.color && <span aria-hidden className="size-2.5 rounded-full" style={{ backgroundColor: c.color }} />}
+                    {c.color && <span aria-hidden className="size-2.5 rounded-full" style={{ backgroundColor: categoryFill(c.color) }} />}
                     {c.name}
                   </Link>
                 </li>

@@ -118,3 +118,13 @@ export function categoryTotals(db: Db, month: string, currency: string): Categor
 export function listCategories(db: Db) {
   return db.select().from(categories).orderBy(asc(categories.id)).all();
 }
+
+/** Sum for one currency over [start, end) ISO dates; 0 when empty. */
+export function totalBetween(db: Db, start: string, end: string, currency: string): number {
+  const row = db
+    .select({ total: sql<number | null>`sum(${expenses.amountMinor})` })
+    .from(expenses)
+    .where(and(gte(expenses.date, start), lt(expenses.date, end), eq(expenses.currency, currency)))
+    .get();
+  return row?.total ?? 0;
+}
