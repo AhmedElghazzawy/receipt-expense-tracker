@@ -1,9 +1,15 @@
-// Placeholder until the Phase 1 home/dashboard screen (docs/DESIGN.md).
+import { ScanLine } from "lucide-react";
+import { EmptyState, PageHeader } from "@/components/empty-state";
+
+// Dashboard (month total, categories, recent) lands in the next Phase 1 PRs.
 export default function Home() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
-      <h1 className="text-2xl font-semibold tracking-tight">Receipt Expense Tracker</h1>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">Foundation is in place. Screens arrive in Phase 1.</p>
-    </main>
+    <>
+      <PageHeader title="This month" />
+      <EmptyState icon={ScanLine} title="Track your first expense">
+        Tap <span className="font-medium text-foreground">+</span> to snap a receipt, upload a dekont, or type it in.
+        Your month at a glance shows up here.
+      </EmptyState>
+    </>
   );
 }
