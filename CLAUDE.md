@@ -24,7 +24,7 @@ Next.js (App Router) + TypeScript, Tailwind + shadcn/ui, SQLite + Drizzle, Zod, 
 - `docs/` plan, architecture, design system, ADRs, model routing, agentic loop
 
 ## Commands
-- `pnpm dev` run app; `pnpm test`; `pnpm lint`; `pnpm typecheck`
+- `pnpm dev` run app; `pnpm test`; `pnpm lint`; `pnpm typecheck`; `pnpm test:e2e` (Playwright, 375 px, throwaway DB)
 - `pnpm eval [--model name]` extraction accuracy on the golden set
 - `pnpm db:generate` after schema changes; `pnpm db:migrate` applies migrations and seeds default categories
 - Node 24+. Next.js 16: read `AGENTS.md` and `node_modules/next/dist/docs/` before using Next APIs
