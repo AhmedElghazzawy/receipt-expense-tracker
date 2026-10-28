@@ -17,4 +17,13 @@ Track spending without typing. Snap a receipt or upload a bank dekont (PDF/image
 Project memory for Claude Code lives in `CLAUDE.md`; agents and skills in `.claude/`.
 
 ## Setup
-Not yet scaffolded (Phase 0). Copy `.env.example` to `.env` and fill in values.
+Requires Node 24+ and pnpm.
+
+```sh
+pnpm install
+cp .env.example .env   # fill in values; all optional for manual use
+pnpm db:migrate        # create data/app.db and seed categories
+pnpm dev
+```
+
+Checks: `pnpm lint && pnpm typecheck && pnpm test`
