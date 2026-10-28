@@ -3,17 +3,31 @@
 import { Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { CaptureSheet } from "./capture-sheet";
 import { isActive, navItems } from "./nav-items";
 
+// usePathname is request-time data; the fallback (no active tab) keeps the shell prerendered.
+function withPathname(View: (props: { pathname: string | null }) => React.ReactNode) {
+  function Live() {
+    return <View pathname={usePathname()} />;
+  }
+  return function Nav() {
+    return (
+      <Suspense fallback={<View pathname={null} />}>
+        <Live />
+      </Suspense>
+    );
+  };
+}
+
 /** Mobile: bottom tab bar in the thumb zone with the capture button in the middle. */
-export function BottomNav() {
-  const pathname = usePathname();
+export const BottomNav = withPathname(function BottomNavView({ pathname }) {
   const [left, right] = [navItems.slice(0, 2), navItems.slice(2)];
 
   const tab = ({ href, label, icon: Icon }: (typeof navItems)[number]) => {
-    const active = isActive(pathname, href);
+    const active = pathname !== null && isActive(pathname, href);
     return (
       <Link
         key={href}
@@ -46,12 +60,10 @@ export function BottomNav() {
       </div>
     </nav>
   );
-}
+});
 
 /** Tablet and desktop: top bar with the same destinations. */
-export function TopNav() {
-  const pathname = usePathname();
-
+export const TopNav = withPathname(function TopNavView({ pathname }) {
   return (
     <header className="sticky top-0 z-40 hidden border-b bg-background/85 backdrop-blur-lg md:block">
       <div className="mx-auto flex h-16 max-w-5xl items-center gap-6 px-6">
@@ -63,7 +75,7 @@ export function TopNav() {
         </Link>
         <nav aria-label="Main" className="flex flex-1 items-center gap-1">
           {navItems.map(({ href, label }) => {
-            const active = isActive(pathname, href);
+            const active = pathname !== null && isActive(pathname, href);
             return (
               <Link
                 key={href}
@@ -83,4 +95,4 @@ export function TopNav() {
       </div>
     </header>
   );
-}
+});

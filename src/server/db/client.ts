@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { getEnv } from "@/server/env";
 import * as schema from "./schema";
+import { seedDefaults } from "./seed";
 
 export const migrationsFolder = "src/server/db/migrations";
 
@@ -24,7 +25,12 @@ export function migrateDb(db: Db) {
 
 let instance: Db | undefined;
 
+/** App database, migrated and seeded on first use so a fresh clone just works. */
 export function getDb(): Db {
-  instance ??= createDb(getEnv().DATABASE_PATH);
+  if (!instance) {
+    instance = createDb(getEnv().DATABASE_PATH);
+    migrateDb(instance);
+    seedDefaults(instance);
+  }
   return instance;
 }
