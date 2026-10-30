@@ -18,6 +18,11 @@ export function parseListFilters(params: RawParams, now = new Date()): ListFilte
   };
 }
 
+/** CSV download of exactly what the list shows (see /api/export). */
+export function exportHref(filters: ListFilters, now = new Date()): string {
+  return listHref(filters, {}, now).replace(/^\/expenses/, "/api/export");
+}
+
 /** Builds /expenses?… for the given filters, omitting defaults. */
 export function listHref(filters: ListFilters, changes: Partial<ListFilters> = {}, now = new Date()): string {
   const next = { ...filters, ...changes };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { listHref, parseListFilters } from "./expense-filters";
+import { exportHref, listHref, parseListFilters } from "./expense-filters";
 
 const now = new Date(2026, 9, 28);
 
@@ -42,5 +42,12 @@ describe("listHref", () => {
 
   it("clears a filter when set to undefined", () => {
     expect(listHref({ ...base, categoryId: 2 }, { categoryId: undefined }, now)).toBe("/expenses");
+  });
+});
+
+describe("exportHref", () => {
+  it("downloads the same filters the list shows", () => {
+    expect(exportHref({ month: "2026-10" }, now)).toBe("/api/export");
+    expect(exportHref({ month: "2026-09", categoryId: 2, search: "migros" }, now)).toBe("/api/export?month=2026-09&category=2&q=migros");
   });
 });

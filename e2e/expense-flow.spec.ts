@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, type Page, test } from "@playwright/test";
 
 // Next keeps visited pages mounted but hidden; role queries only match the visible one.
@@ -32,7 +33,17 @@ test("add, edit, and delete expenses; totals follow", async ({ page }) => {
   await expect(page.getByRole("link", { name: /Migros.*₺1\.234,56/ })).toBeVisible();
 
   await addExpense(page, "65,44", "A101", "Groceries");
-  await expect(page.getByText("2 expenses")).toBeVisible();
+  await expect(page.getByText("2 expenses", { exact: true })).toBeVisible();
+
+  // CSV export downloads exactly what the list shows.
+  const download = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Download these 2 expenses as CSV" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toMatch(/^expenses-\d{4}-\d{2}\.csv$/);
+  const csv = readFileSync(await file.path(), "utf8");
+  expect(csv.replace(/^\uFEFF/, "").split("\r\n")[0]).toBe("date,amount,currency,merchant,category,note,source");
+  expect(csv).toContain(",1234.56,TRY,Migros,Groceries,,manual");
+  expect(csv).toContain(",65.44,TRY,A101,Groceries,,manual");
 
   // Dashboard: month total and category breakdown.
   await page.getByRole("link", { name: "Home" }).click();

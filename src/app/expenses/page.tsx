@@ -1,4 +1,4 @@
-import { ReceiptText, SearchX } from "lucide-react";
+import { Download, ReceiptText, SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -7,7 +7,7 @@ import { EmptyState, PageHeader } from "@/components/empty-state";
 import { ExpenseRow } from "@/components/expense-row";
 import { MonthSwitcher } from "@/components/month-switcher";
 import { formatDayLabel, formatMonth, todayIso } from "@/lib/dates";
-import { listHref, parseListFilters } from "@/lib/expense-filters";
+import { exportHref, listHref, parseListFilters } from "@/lib/expense-filters";
 import { formatMoney } from "@/lib/money";
 import { categoryFill } from "@/lib/category-color";
 import { cn } from "@/lib/utils";
@@ -85,6 +85,14 @@ async function ExpensesView({ searchParams }: { searchParams: PageProps<"/expens
         <>
           <Totals expenses={expenses} />
           <DayGroups expenses={expenses} />
+          <a
+            href={exportHref(filters)}
+            download
+            className="mx-auto inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <Download aria-hidden className="size-4" />
+            Download {expenses.length === 1 ? "this expense" : `these ${expenses.length} expenses`} as CSV
+          </a>
         </>
       )}
     </div>
