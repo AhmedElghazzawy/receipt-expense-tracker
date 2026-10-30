@@ -37,7 +37,7 @@ Top-notch, modern, mobile-first UI is a core requirement. Read docs/DESIGN.md an
 - Tests next to code (`*.test.ts`). Bug fix = failing test first.
 - Models and limits come from env (`LLM_LOCAL_MODEL`, `LLM_CLOUD_MODEL`, `PRIVACY_MODE`, `CLOUD_DAILY_CAP`); never hard-code names.
 - Mobile first: design at 375 px width, then scale up.
-- Conventional commits; one small PR per task.
+- Conventional commits; one small commit per task, pushed straight to `main` (solo project, no PRs). CI re-runs every check on each push; fix a red build before anything else.
 
 ## Workflow
 Follow docs/AGENTIC_LOOP.md. Agents live in `.claude/agents/`, skills in `.claude/skills/`. Run lint + typecheck + tests before saying a task is done, and show the output.

@@ -3,13 +3,13 @@
 Goal: ship each task with the least tokens and the least rework.
 
 ## Loop for every task
-1. **Scope**: one task = one small PR (under about 300 changed lines). Write acceptance criteria first (a failing test or checklist).
+1. **Scope**: one task = one small commit (under about 300 changed lines). Write acceptance criteria first (a failing test or checklist).
 2. **Plan** (only for tasks touching more than 2 files): the `architect` agent proposes file-level steps. Skip for small fixes.
 3. **Implement**: the `designer` agent for UI, the `implementer` agent for everything else, works test-first, touching only files in the plan.
-4. **Verify**: run `pnpm lint && pnpm typecheck && pnpm test`. Never claim done without output.
+4. **Verify**: run `pnpm lint && pnpm typecheck && pnpm test`, plus `pnpm test:e2e` when UI, routes, or the extraction runtime changed. Never claim done without output.
 5. **Review**: the `reviewer` agent reads the diff only, against the checklist in the `review-pr` skill.
 6. **Evals**: if extraction code or prompts changed, run `pnpm eval` and paste the before/after.
-7. **Ship**: commit, open PR, link acceptance criteria.
+7. **Ship**: commit to `main` and push (no branches or PRs: solo project). Watch the CI run; if it goes red, fixing it is the next task.
 
 ## Token discipline
 - Start each session by reading `CLAUDE.md` only. Open other docs when the task needs them.

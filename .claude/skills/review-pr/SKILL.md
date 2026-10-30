@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Review checklist for diffs in this repo. Load when reviewing a PR or before opening one.
+description: Review checklist for diffs in this repo. Load when reviewing a change before committing it.
 ---
 
 Check in this order:

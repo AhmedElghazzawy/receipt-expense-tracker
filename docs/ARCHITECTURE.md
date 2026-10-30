@@ -62,4 +62,4 @@ See `docs/MODEL_ROUTING.md`. Models and limits come from env (`LLM_LOCAL_MODEL`,
 ## Quality strategy
 - Golden set: `evals/` with anonymised sample documents and expected JSON; `pnpm eval` reports field accuracy per model. A model change must not lower accuracy.
 - Unit tests for rules and normalisation; integration tests with `MockProvider`; one mobile-viewport E2E for the upload-review-save flow.
-- CI: lint, typecheck, tests on every PR (GitHub Actions free tier).
+- CI: lint, typecheck, unit and E2E tests, build on every push to `main` (GitHub Actions free tier).
