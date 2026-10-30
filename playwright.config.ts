@@ -24,6 +24,13 @@ export default defineConfig({
     url: `http://localhost:${PORT}`,
     timeout: 180_000,
     reuseExistingServer: false,
-    env: { DATABASE_PATH: process.env.E2E_DATABASE_PATH },
+    // Rules and OCR only: no model or network, whatever a local .env says.
+    env: {
+      DATABASE_PATH: process.env.E2E_DATABASE_PATH,
+      PRIVACY_MODE: "local_only",
+      LLM_LOCAL_MODEL: "",
+      LLM_CLOUD_MODEL: "",
+      GEMINI_API_KEY: "",
+    },
   },
 });

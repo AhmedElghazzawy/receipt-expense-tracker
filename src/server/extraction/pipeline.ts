@@ -66,7 +66,11 @@ export async function extractDocument(bytes: Uint8Array, deps: PipelineDeps): Pr
   const cached = getCachedExtraction(deps.db, fileHash);
   if (cached) {
     const parsed = extractionResultSchema.safeParse(cached.resultJson);
-    if (parsed.success) return { result: parsed.data, fileHash, cached: true };
+    // The cache skips the work, not the user's latest category choice.
+    if (parsed.success) {
+      const result = { ...parsed.data, fields: applyMerchantMemory(deps.db, parsed.data.fields) };
+      return { result, fileHash, cached: true };
+    }
   }
 
   // 1. Text: PDF text layer (exact) or OCR.
@@ -92,10 +96,7 @@ export async function extractDocument(bytes: Uint8Array, deps: PipelineDeps): Pr
   let source: ExtractionResult["source"] = { provider: "rules", tier: 0 };
 
   // 3. Merchant memory: the user's own past choice beats keyword guesses.
-  if (fields.merchant.value) {
-    const remembered = recallMerchantCategory(deps.db, fields.merchant.value);
-    if (remembered) fields = { ...fields, category: { value: remembered.categoryName, confidence: 0.95 } };
-  }
+  fields = applyMerchantMemory(deps.db, fields);
 
   // 4. Models, only for what is still uncertain.
   const uncertain = uncertainFields(fields, LOW_CONFIDENCE);
@@ -131,6 +132,11 @@ export async function extractDocument(bytes: Uint8Array, deps: PipelineDeps): Pr
   // Don't cache a degraded result: retrying later (e.g. once Ollama runs) may do better.
   if (!modelUnavailable) cacheExtraction(deps.db, fileHash, result);
   return { result, fileHash, cached: false };
+}
+
+function applyMerchantMemory(db: Db, fields: ExtractedFields): ExtractedFields {
+  const remembered = fields.merchant.value ? recallMerchantCategory(db, fields.merchant.value) : undefined;
+  return remembered ? { ...fields, category: { value: remembered.categoryName, confidence: 0.95 } } : fields;
 }
 
 function capConfidence(fields: ExtractedFields, cap: number): ExtractedFields {

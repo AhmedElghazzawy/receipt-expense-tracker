@@ -89,6 +89,15 @@ describe("extractDocument steps", () => {
     expect(result.fields.amountMinor.value).toBe(29740);
   });
 
+  it("applies the latest merchant memory to cached results too", async () => {
+    await extractDocument(png, { db, today: TODAY, ocr: ocr(receiptText) });
+    const dining = listCategories(db).find((c) => c.name === "Dining")!;
+    rememberMerchantCategory(db, "Migros", dining.id);
+    const { cached, result } = await extractDocument(png, { db, today: TODAY, ocr: ocr(receiptText) });
+    expect(cached).toBe(true);
+    expect(result.fields.category).toEqual({ value: "Dining", confidence: 0.95 });
+  });
+
   it("uses merchant memory over keyword guesses", async () => {
     const dining = listCategories(db).find((c) => c.name === "Dining")!;
     rememberMerchantCategory(db, "MIGROS", dining.id);
