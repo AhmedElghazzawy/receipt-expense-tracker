@@ -18,7 +18,7 @@ Next.js (App Router) + TypeScript, Tailwind + shadcn/ui, SQLite + Drizzle, Zod, 
 - `src/app/` routes and UI; `src/app/api/` route handlers (thin)
 - `src/server/extraction/` pipeline steps, one file per step
 - `src/server/llm/` provider interface, router, Ollama/Gemini/Mock providers
-- `src/server/db/` Drizzle schema and queries
+- `src/server/db/` Drizzle schema, queries, seed; migrations in `src/server/db/migrations/`
 - `src/lib/` shared pure helpers (money, dates, normalisation)
 - `evals/` golden documents and expected JSON
 - `docs/` plan, architecture, design system, ADRs, model routing, agentic loop
@@ -26,7 +26,8 @@ Next.js (App Router) + TypeScript, Tailwind + shadcn/ui, SQLite + Drizzle, Zod, 
 ## Commands
 - `pnpm dev` run app; `pnpm test`; `pnpm lint`; `pnpm typecheck`
 - `pnpm eval [--model name]` extraction accuracy on the golden set
-- `pnpm db:migrate` / `pnpm db:generate`
+- `pnpm db:generate` after schema changes; `pnpm db:migrate` applies migrations and seeds default categories
+- Node 24+. Next.js 16: read `AGENTS.md` and `node_modules/next/dist/docs/` before using Next APIs
 
 ## Design
 Top-notch, modern, mobile-first UI is a core requirement. Read docs/DESIGN.md and use the `designer` agent for any UI work. Tailwind tokens only, shadcn/ui, light and dark.

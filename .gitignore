@@ -27,3 +27,8 @@ test-results/
 # logs and OS
 *.log
 .DS_Store
+
+# misc
+*.pem
+.vercel
+.pnp.*
