@@ -15,11 +15,13 @@ const LANGS = ["tur", "eng"] as const;
 function localLangPath(): string {
   const dir = join(tmpdir(), "receipt-tracker-ocr-4.0.0_best_int");
   mkdirSync(dir, { recursive: true });
-  const require = createRequire(import.meta.url);
+  // Resolve from the project root at runtime. createRequire(import.meta.url) gets rewritten by the
+  // bundler in production builds, where resolve() then returns a module id instead of a path.
+  const fromProject = createRequire(join(process.cwd(), "package.json"));
   for (const lang of LANGS) {
     const target = join(dir, `${lang}.traineddata.gz`);
     if (!existsSync(target)) {
-      const pkg = dirname(require.resolve(`@tesseract.js-data/${lang}/package.json`));
+      const pkg = dirname(fromProject.resolve(`@tesseract.js-data/${lang}/package.json`));
       copyFileSync(join(pkg, "4.0.0_best_int", `${lang}.traineddata.gz`), target);
     }
   }
