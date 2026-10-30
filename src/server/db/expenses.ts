@@ -2,7 +2,7 @@ import { and, asc, desc, eq, gte, like, lt, sql } from "drizzle-orm";
 import { monthRange } from "@/lib/dates";
 import type { ExpenseInput } from "@/lib/expense-input";
 import type { Db } from "./client";
-import { categories, expenses } from "./schema";
+import { categories, type expenseSources, expenses } from "./schema";
 
 export type ExpenseFilters = { month?: string; categoryId?: number; search?: string };
 
@@ -60,8 +60,15 @@ export function getExpense(db: Db, id: number): ExpenseRow | undefined {
   return selectExpenseRows(db).where(eq(expenses.id, id)).get();
 }
 
-export function createExpense(db: Db, input: ExpenseInput): number {
-  return db.insert(expenses).values(input).returning({ id: expenses.id }).get().id;
+/** Where an expense came from: typed in, or a reviewed receipt/dekont upload. */
+export type ExpenseOrigin = { source: (typeof expenseSources)[number]; fileHash: string | null };
+
+export function createExpense(db: Db, input: ExpenseInput, origin?: ExpenseOrigin): number {
+  return db
+    .insert(expenses)
+    .values({ ...input, ...origin })
+    .returning({ id: expenses.id })
+    .get().id;
 }
 
 /** Returns false when no expense has that id. */

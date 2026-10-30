@@ -49,6 +49,13 @@ describe("expense CRUD", () => {
     expect(getExpense(db, id)).toBeUndefined();
   });
 
+  it("records where an expense came from, defaulting to manual", () => {
+    const fileHash = "a".repeat(64);
+    const scanned = createExpense(db, expense(), { source: "receipt", fileHash });
+    expect(getExpense(db, scanned)).toMatchObject({ source: "receipt" });
+    expect(getExpense(db, createExpense(db, expense()))).toMatchObject({ source: "manual" });
+  });
+
   it("reports missing ids instead of throwing", () => {
     expect(updateExpense(db, 999, expense())).toBe(false);
     expect(deleteExpense(db, 999)).toBe(false);

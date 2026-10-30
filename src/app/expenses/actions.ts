@@ -5,6 +5,8 @@ import { z } from "zod";
 import { expenseFormSchema } from "@/lib/expense-input";
 import { getDb } from "@/server/db/client";
 import { createExpense, deleteExpense, updateExpense } from "@/server/db/expenses";
+import { rememberMerchantCategory } from "@/server/db/memory";
+import { expenseSources } from "@/server/db/schema";
 
 export type FormValues = Partial<Record<"amount" | "currency" | "date" | "merchant" | "categoryId" | "note", string>>;
 
@@ -13,6 +15,16 @@ export type SaveState =
   | { ok: false; fieldErrors?: Partial<Record<keyof FormValues, string>>; formError?: string; values?: FormValues };
 
 const idSchema = z.number().int().positive().nullable();
+
+// Set by the review screen for scanned documents; plain forms send neither.
+const originSchema = z.object({
+  source: z.enum(expenseSources).catch("manual"),
+  fileHash: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .nullable()
+    .catch(null),
+});
 
 /** Create (id = null) or update an expense from the form. Route stays thin: parse, call, respond. */
 export async function saveExpense(id: number | null, _prev: SaveState | null, formData: FormData): Promise<SaveState> {
@@ -36,9 +48,14 @@ export async function saveExpense(id: number | null, _prev: SaveState | null, fo
 
   const db = getDb();
   if (parsedId.data === null) {
-    createExpense(db, parsed.data);
+    const origin = originSchema.parse({ source: formData.get("source"), fileHash: formData.get("fileHash") });
+    createExpense(db, parsed.data, origin);
   } else if (!updateExpense(db, parsedId.data, parsed.data)) {
     return { ok: false, formError: "This expense no longer exists.", values };
+  }
+  // The user's choice teaches the next extraction (merchant memory).
+  if (parsed.data.merchant && parsed.data.categoryId) {
+    rememberMerchantCategory(db, parsed.data.merchant, parsed.data.categoryId);
   }
   revalidatePath("/", "layout");
   return { ok: true };

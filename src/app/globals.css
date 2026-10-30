@@ -171,6 +171,20 @@
   }
 }
 
+/* Review screen: a soft band sweeps the document while it is being read. */
+@keyframes scan-sweep {
+  from {
+    top: -4rem;
+  }
+  to {
+    top: 100%;
+  }
+}
+
+.scan-line {
+  animation: scan-sweep 1.6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
