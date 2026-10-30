@@ -1,12 +1,13 @@
-import { ChevronLeft, ChevronRight, ReceiptText, SearchX } from "lucide-react";
+import { ReceiptText, SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { EmptyState, PageHeader } from "@/components/empty-state";
 import { ExpenseRow } from "@/components/expense-row";
-import { currentMonth, formatDayLabel, formatMonth, shiftMonth, todayIso } from "@/lib/dates";
-import { type ListFilters, listHref, parseListFilters } from "@/lib/expense-filters";
+import { MonthSwitcher } from "@/components/month-switcher";
+import { formatDayLabel, formatMonth, todayIso } from "@/lib/dates";
+import { listHref, parseListFilters } from "@/lib/expense-filters";
 import { formatMoney } from "@/lib/money";
 import { categoryFill } from "@/lib/category-color";
 import { cn } from "@/lib/utils";
@@ -39,7 +40,7 @@ async function ExpensesView({ searchParams }: { searchParams: PageProps<"/expens
 
   return (
     <div className="flex flex-col gap-5">
-      <MonthSwitcher filters={filters} />
+      <MonthSwitcher month={filters.month} hrefFor={(month) => listHref(filters, { month })} />
       <div className="flex flex-col gap-3">
         <SearchBox />
         <nav aria-label="Filter by category" className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:px-0">
@@ -85,31 +86,6 @@ async function ExpensesView({ searchParams }: { searchParams: PageProps<"/expens
           <Totals expenses={expenses} />
           <DayGroups expenses={expenses} />
         </>
-      )}
-    </div>
-  );
-}
-
-function MonthSwitcher({ filters }: { filters: ListFilters }) {
-  const isCurrent = filters.month >= currentMonth();
-  const arrow =
-    "flex size-11 items-center justify-center rounded-full border bg-card transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <Link href={listHref(filters, { month: shiftMonth(filters.month, -1) })} aria-label="Previous month" className={arrow} scroll={false}>
-        <ChevronLeft className="size-5" />
-      </Link>
-      <h2 className="text-xl font-semibold tracking-tight" aria-live="polite">
-        {formatMonth(filters.month)}
-      </h2>
-      {isCurrent ? (
-        <span aria-hidden className={cn(arrow, "pointer-events-none opacity-40")}>
-          <ChevronRight className="size-5" />
-        </span>
-      ) : (
-        <Link href={listHref(filters, { month: shiftMonth(filters.month, 1) })} aria-label="Next month" className={arrow} scroll={false}>
-          <ChevronRight className="size-5" />
-        </Link>
       )}
     </div>
   );

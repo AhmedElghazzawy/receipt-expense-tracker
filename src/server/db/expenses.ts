@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, like, lt, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, like, lt, sql } from "drizzle-orm";
 import { monthRange } from "@/lib/dates";
 import type { ExpenseInput } from "@/lib/expense-input";
 import type { Db } from "./client";
@@ -134,4 +134,32 @@ export function totalBetween(db: Db, start: string, end: string, currency: strin
     .where(and(gte(expenses.date, start), lt(expenses.date, end), eq(expenses.currency, currency)))
     .get();
   return row?.total ?? 0;
+}
+
+/** Per-month sums for one currency, months `from`..`to` inclusive. Months with no spend are absent. */
+export function monthlyTotals(db: Db, from: string, to: string, currency: string): { month: string; totalMinor: number }[] {
+  const month = sql<string>`substr(${expenses.date}, 1, 7)`;
+  return db
+    .select({ month, totalMinor: sql<number>`sum(${expenses.amountMinor})` })
+    .from(expenses)
+    .where(and(gte(expenses.date, monthRange(from).start), lt(expenses.date, monthRange(to).end), eq(expenses.currency, currency)))
+    .groupBy(month)
+    .orderBy(month)
+    .all();
+}
+
+export type MerchantTotal = { merchant: string; totalMinor: number; count: number };
+
+/** Spend per merchant spelling in a month for one currency (fold spellings with foldMerchants). */
+export function merchantTotals(db: Db, month: string, currency: string): MerchantTotal[] {
+  return db
+    .select({
+      merchant: sql<string>`${expenses.merchant}`,
+      totalMinor: sql<number>`sum(${expenses.amountMinor})`,
+      count: sql<number>`count(*)`,
+    })
+    .from(expenses)
+    .where(and(filterWhere({ month }), eq(expenses.currency, currency), isNotNull(expenses.merchant)))
+    .groupBy(expenses.merchant)
+    .all();
 }

@@ -51,6 +51,16 @@ test("add, edit, and delete expenses; totals follow", async ({ page }) => {
   await expect(breakdown.getByRole("link", { name: /Groceries.*₺1\.234,56/ })).toBeVisible();
   await expect(breakdown.getByRole("link", { name: /Dining.*₺65,44/ })).toBeVisible();
 
+  // Insights: trend and top merchants; a merchant opens the list searched for it.
+  await page.getByRole("link", { name: "Insights" }).click();
+  await expect(page.getByRole("heading", { name: "Last 6 months" })).toBeVisible();
+  const merchants = page.getByRole("region", { name: "Top merchants" });
+  await expect(merchants.getByRole("link", { name: /Migros.*₺1\.234,56/ })).toBeVisible();
+  await merchants.getByRole("link", { name: /A101/ }).click();
+  await expect(page).toHaveURL(/q=A101/);
+  await expect(page.getByRole("link", { name: /Migros/ })).toHaveCount(0);
+  await page.getByRole("link", { name: "Home" }).click();
+
   // Filter the list by category from the breakdown.
   await breakdown.getByRole("link", { name: /Dining/ }).click();
   await expect(page).toHaveURL(/category=/);

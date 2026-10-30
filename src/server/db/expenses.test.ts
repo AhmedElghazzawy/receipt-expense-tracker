@@ -8,6 +8,8 @@ import {
   getExpense,
   listCategories,
   listExpenses,
+  merchantTotals,
+  monthlyTotals,
   monthTotals,
   totalBetween,
   updateExpense,
@@ -126,6 +128,27 @@ describe("totals", () => {
     expect(totalBetween(db, "2026-10-15", "2026-10-15", "TRY")).toBe(0);
     expect(totalBetween(db, "2026-11-01", "2026-11-02", "TRY")).toBe(7777);
     expect(totalBetween(db, "2020-01-01", "2020-02-01", "TRY")).toBe(0);
+  });
+
+  it("sums per month for one currency over a month range", () => {
+    createExpense(db, expense({ amountMinor: 100, date: "2026-08-31" }));
+    expect(monthlyTotals(db, "2026-08", "2026-11", "TRY")).toEqual([
+      { month: "2026-08", totalMinor: 100 },
+      { month: "2026-10", totalMinor: 3850 },
+      { month: "2026-11", totalMinor: 7777 },
+    ]);
+    expect(monthlyTotals(db, "2026-09", "2026-10", "EUR")).toEqual([{ month: "2026-10", totalMinor: 999 }]);
+  });
+
+  it("sums per merchant spelling, skipping expenses without one", () => {
+    createExpense(db, expense({ amountMinor: 400, merchant: "Migros" }));
+    createExpense(db, expense({ amountMinor: 600, merchant: "MIGROS" }));
+    createExpense(db, expense({ amountMinor: 250, merchant: "Migros" }));
+    const rows = merchantTotals(db, "2026-10", "TRY").sort((a, b) => a.totalMinor - b.totalMinor);
+    expect(rows).toEqual([
+      { merchant: "MIGROS", totalMinor: 600, count: 1 },
+      { merchant: "Migros", totalMinor: 650, count: 2 },
+    ]);
   });
 
   it("returns empty arrays for an empty month", () => {
