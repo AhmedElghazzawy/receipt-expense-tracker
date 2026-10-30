@@ -1,10 +1,8 @@
 import { isFutureDate } from "@/lib/dates";
 import { parseAmount } from "@/lib/money";
 import { foldText } from "@/lib/normalize";
-import type { ExtractedFields } from "./result";
+import type { DocumentType, ExtractedFields } from "./result";
 import { matchBrand, matchCategoryHint } from "./keywords";
-
-export type DocumentType = "receipt" | "dekont";
 
 export type RuleResult = { fields: ExtractedFields; documentType: DocumentType };
 
@@ -99,11 +97,13 @@ function findTotal(lines: string[], folded: string[]) {
 
 // --- currency -------------------------------------------------------------
 
+// Symbols count only next to a real amount: OCR often reads KDV rates "%1" as "$1".
+const amountNear = (sym: string) => new RegExp(`${sym}\\s?\\d[\\d.,]*[.,]\\d{2}\\b|\\d[.,]\\d{2}\\s?${sym}`);
 const currencyMarkers: [string, RegExp][] = [
-  ["TRY", /₺|\btl\b|\btry\b|\blira\b/],
-  ["EUR", /€|\beur\b|\beuro\b/],
-  ["USD", /\$|\busd\b/],
-  ["GBP", /£|\bgbp\b/],
+  ["TRY", new RegExp(`${amountNear("₺").source}|\\btl\\b|\\btry\\b|\\blira\\b`)],
+  ["EUR", new RegExp(`${amountNear("€").source}|\\beur\\b|\\beuro\\b`)],
+  ["USD", new RegExp(`${amountNear("\\$").source}|\\busd\\b`)],
+  ["GBP", new RegExp(`${amountNear("£").source}|\\bgbp\\b`)],
 ];
 
 function findCurrency(folded: string[], amountLine?: number) {
@@ -114,6 +114,8 @@ function findCurrency(folded: string[], amountLine?: number) {
     .filter(([, n]) => n > 0)
     .sort((a, b) => b[1] - a[1]);
   if (counts[0]) return field(counts[0][0], 0.75);
+  // Turkish tax wording (KDV, fiş) is strong evidence for lira.
+  if (folded.some((f) => /\b(top ?kdv|kdv|fis no|fis)\b/.test(f))) return field("TRY", 0.8);
   return field("TRY", 0.5); // Turkish documents by default (docs/PLAN.md)
 }
 

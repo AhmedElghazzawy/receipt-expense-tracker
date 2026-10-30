@@ -1,0 +1,17 @@
+[
+  {
+    "file": "fixtures/receipt-migros.png",
+    "today": "2026-10-30",
+    "expected": { "amountMinor": 29740, "currency": "TRY", "date": "2026-10-28", "merchant": "Migros", "category": "Groceries", "documentType": "receipt" }
+  },
+  {
+    "file": "fixtures/dekont-eft.pdf",
+    "today": "2026-10-30",
+    "expected": { "amountMinor": 2500000, "currency": "TRY", "date": "2026-10-27", "merchant": "Örnek Emlak", "category": "Bills & Utilities", "documentType": "dekont" }
+  },
+  {
+    "file": "fixtures/slip-kahve.pdf",
+    "today": "2026-10-30",
+    "expected": { "amountMinor": 8550, "currency": "TRY", "date": "2026-10-26", "merchant": "Kahve Dünyası", "category": "Dining", "documentType": "receipt" }
+  }
+]

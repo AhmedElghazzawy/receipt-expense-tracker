@@ -20,12 +20,21 @@ export const extractedFieldsSchema = z.object({
 
 export type ExtractedFields = z.infer<typeof extractedFieldsSchema>;
 
+export const documentTypes = ["receipt", "dekont"] as const;
+export const inputKinds = ["text_pdf", "scanned_pdf", "image"] as const;
+export type DocumentType = (typeof documentTypes)[number];
+export type InputKind = (typeof inputKinds)[number];
+
 export const extractionResultSchema = z.object({
   fields: extractedFieldsSchema,
   // Tier 0 = code (rules/OCR/memory), 1 = local model, 2-3 = cloud.
   source: z.object({
     provider: z.string().min(1),
     tier: z.number().int().min(0).max(3),
+  }),
+  document: z.object({
+    type: z.enum(documentTypes),
+    input: z.enum(inputKinds),
   }),
 });
 

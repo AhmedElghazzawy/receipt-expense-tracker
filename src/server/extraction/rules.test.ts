@@ -93,6 +93,19 @@ describe("extractWithRules", () => {
     expect(fields.category.value).toBe("Dining");
   });
 
+  it("does not mistake OCR-garbled KDV rates ($1 for %1) for dollars", () => {
+    // Verbatim tesseract output for evals/fixtures/receipt-migros.png.
+    const ocr = "MİGROS TİCARET A.Ş.\nSÜT 1L $1 *32,50\nEKMEK $1 *15,00\nDETERJAN %20 *249,90\nTOPKDV *42,57\nTOPLAM *297,40";
+    const { fields } = extractWithRules(ocr, TODAY);
+    expect(fields.currency).toEqual({ value: "TRY", confidence: 0.8 });
+    expect(fields.amountMinor.value).toBe(29740);
+  });
+
+  it("still detects symbols written next to amounts", () => {
+    expect(extractWithRules("Total $12.50", TODAY).fields.currency.value).toBe("USD");
+    expect(extractWithRules("Summe 8,90 €", TODAY).fields.currency.value).toBe("EUR");
+  });
+
   it("falls back to the largest amount with low confidence when no keyword exists", () => {
     const { fields } = extractWithRules("ABC LTD\n12,00\n140,50\n3,25", TODAY);
     expect(fields.amountMinor).toEqual({ value: 14050, confidence: 0.4 });

@@ -1,7 +1,5 @@
 import type { PrivacyMode } from "@/server/env";
-
-export type DocumentType = "receipt" | "dekont";
-export type InputKind = "text_pdf" | "scanned_pdf" | "image";
+import type { DocumentType, InputKind } from "@/server/extraction/result";
 
 /**
  * never:    tiers 0-1 only.

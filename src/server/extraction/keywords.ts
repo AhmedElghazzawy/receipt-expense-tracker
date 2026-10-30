@@ -44,18 +44,23 @@ const brands: { match: string[]; name: string; category: CategoryName }[] = [
   { match: ["airbnb"], name: "Airbnb", category: "Travel" },
 ];
 
-/** Generic words that hint at a category when no brand matches. */
+/**
+ * Generic word stems that hint at a category when no brand matches. Matched as word
+ * prefixes because Turkish adds suffixes ("kira" -> "kirası"). "fatura" is left out:
+ * every e-invoice receipt says "FATURA NO".
+ */
 const hints: { match: string[]; category: CategoryName }[] = [
   { match: ["market", "supermarket", "manav", "kasap", "firin", "grocery"], category: "Groceries" },
   { match: ["restoran", "restaurant", "cafe", "kafe", "kahve", "lokanta", "pastane", "coffee"], category: "Dining" },
-  { match: ["akaryakit", "benzin", "motorin", "otopark", "taksi", "taxi", "fuel", "parking"], category: "Transport" },
-  { match: ["fatura", "elektrik", "dogalgaz", "aidat", "kira", "internet", "invoice", "rent"], category: "Bills & Utilities" },
+  { match: ["akaryakit", "benzin", "motorin", "otopark", "taksi(?!t)", "taxi", "fuel", "parking"], category: "Transport" },
+  { match: ["elektrik", "dogalgaz", "aidat", "kira", "internet", "rent\\b"], category: "Bills & Utilities" },
   { match: ["eczane", "hastane", "klinik", "pharmacy", "hospital", "saglik"], category: "Health" },
   { match: ["sinema", "tiyatro", "konser", "cinema", "concert"], category: "Entertainment" },
   { match: ["otel", "hotel", "havalimani", "airport", "pansiyon"], category: "Travel" },
 ];
 
 const hasToken = (folded: string, token: string) => new RegExp(`(^|[^a-z0-9])${token}([^a-z0-9]|$)`).test(folded);
+const hasStem = (folded: string, stem: string) => new RegExp(`(^|[^a-z0-9])${stem}`).test(folded);
 
 export function matchBrand(text: string) {
   const folded = foldText(text);
@@ -64,5 +69,5 @@ export function matchBrand(text: string) {
 
 export function matchCategoryHint(text: string): CategoryName | undefined {
   const folded = foldText(text);
-  return hints.find((h) => h.match.some((m) => hasToken(folded, m)))?.category;
+  return hints.find((h) => h.match.some((m) => hasStem(folded, m)))?.category;
 }
