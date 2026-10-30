@@ -17,7 +17,7 @@ export type ExtractionInput = {
 export interface LlmProvider {
   readonly name: string;
   readonly tier: ProviderTier;
-  /** Returns raw model JSON. Callers must validate it (see parseProviderOutput). */
+  /** Returns raw model JSON. Callers must validate it (see parseModelOutput). */
   extract(input: ExtractionInput, opts?: { signal?: AbortSignal }): Promise<unknown>;
 }
 

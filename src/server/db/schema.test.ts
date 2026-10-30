@@ -18,6 +18,16 @@ describe("schema", () => {
     const rows = db.select().from(categories).all();
     expect(rows).toHaveLength(defaultCategories.length);
     expect(rows.every((r) => r.isDefault)).toBe(true);
+    expect(rows.every((r) => r.color.startsWith("cat-"))).toBe(true);
+  });
+
+  it("upgrades legacy default colours without touching user categories", () => {
+    db.insert(categories).values({ name: "Groceries", color: "#117733", isDefault: true }).run();
+    db.insert(categories).values({ name: "Pets", color: "cat-5" }).run();
+    seedDefaults(db);
+    const byName = new Map(db.select().from(categories).all().map((r) => [r.name, r]));
+    expect(byName.get("Groceries")?.color).toBe("cat-1");
+    expect(byName.get("Pets")).toMatchObject({ color: "cat-5", isDefault: false });
   });
 
   it("stores an expense in integer minor units with defaults", () => {
