@@ -1,5 +1,6 @@
-import { and, asc, desc, eq, gte, isNotNull, like, lt, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, lt, sql } from "drizzle-orm";
 import { monthRange } from "@/lib/dates";
+import { foldText } from "@/lib/normalize";
 import type { ExpenseInput } from "@/lib/expense-input";
 import type { Db } from "./client";
 import { categories, type expenseSources, expenses } from "./schema";
@@ -21,12 +22,14 @@ export type ExpenseRow = {
 
 function filterWhere({ month, categoryId, search }: ExpenseFilters) {
   const range = month ? monthRange(month) : undefined;
-  const term = search?.trim().replace(/[\\%_]/g, (c) => `\\${c}`);
+  const term = search?.trim() ? foldText(search.trim()).replace(/[\\%_]/g, (c) => `\\${c}`) : undefined;
   return and(
     range && gte(expenses.date, range.start),
     range && lt(expenses.date, range.end),
     categoryId !== undefined ? eq(expenses.categoryId, categoryId) : undefined,
-    term ? sql`(${like(expenses.merchant, `%${term}%`)} escape '\\' or ${like(expenses.note, `%${term}%`)} escape '\\')` : undefined,
+    term
+      ? sql`(fold(${expenses.merchant}) like ${`%${term}%`} escape '\\' or fold(${expenses.note}) like ${`%${term}%`} escape '\\')`
+      : undefined,
   );
 }
 

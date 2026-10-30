@@ -88,6 +88,17 @@ describe("listExpenses", () => {
     expect(listExpenses(db, { search: "MIGROS" }).map((e) => e.merchant)).toEqual(["Next", "Migros"]);
   });
 
+  it("searches Turkish text without caring about case or accents", () => {
+    createExpense(db, expense({ merchant: "Kahve Dünyası" }));
+    createExpense(db, expense({ merchant: "İGDAŞ", note: "Ekim faturası" }));
+    const merchants = (search: string) => listExpenses(db, { month: "2026-10", search }).map((e) => e.merchant);
+    expect(merchants("kahve dunyasi")).toEqual(["Kahve Dünyası"]);
+    expect(merchants("DÜNYASI")).toEqual(["Kahve Dünyası"]);
+    expect(merchants("igdas")).toEqual(["İGDAŞ"]);
+    expect(merchants("ıgdaş")).toEqual(["İGDAŞ"]);
+    expect(merchants("FATURASI")).toEqual(["İGDAŞ"]);
+  });
+
   it("treats % and _ in search literally", () => {
     expect(listExpenses(db, { search: "50%" }).map((e) => e.merchant)).toEqual(["Kahve 50%"]);
     expect(listExpenses(db, { search: "%" })).toHaveLength(1);

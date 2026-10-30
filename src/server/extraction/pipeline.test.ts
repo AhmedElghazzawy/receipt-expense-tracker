@@ -145,6 +145,16 @@ describe("extractDocument steps", () => {
     expect(getCachedExtraction(db, fileHash)).toBeUndefined();
   });
 
+  it("does not cache when reading the text failed, and says why in the log", async () => {
+    const warn = vi.spyOn(console, "error").mockImplementation(() => {});
+    const broken = vi.fn().mockRejectedValue(new Error("worker crashed"));
+    const { fileHash, result } = await extractDocument(png, { db, today: TODAY, ocr: broken });
+    expect(result.fields.amountMinor.value).toBeNull();
+    expect(getCachedExtraction(db, fileHash)).toBeUndefined();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("worker crashed"));
+    warn.mockRestore();
+  });
+
   it("treats a PDF without a text layer as scanned and hands the file to the model", async () => {
     const modelStep = vi.fn<ModelStep>().mockResolvedValue(null);
     const { result } = await extractDocument(dekont, { db, today: TODAY, pdfText: async () => "  ", modelStep });
