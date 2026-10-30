@@ -73,18 +73,30 @@ export async function extractDocument(bytes: Uint8Array, deps: PipelineDeps): Pr
     }
   }
 
-  // 1. Text: PDF text layer (exact) or OCR.
+  // 1. Text: PDF text layer (exact) or OCR. A failure here is logged and never cached.
+  let readFailed = false;
+  const readError = (step: string) => (error: unknown) => {
+    readFailed = true;
+    // Library error messages only, never document content.
+    console.error(`[extract] ${step} failed: ${error instanceof Error ? `${error.name}: ${error.message}` : "unknown"}`);
+  };
   let text = "";
   let inputKind: InputKind;
   let ocrConfidence: number | null = null;
   if (fileType.kind === "pdf") {
-    text = await (deps.pdfText ?? extractPdfText)(bytes).catch(() => "");
+    text = await (deps.pdfText ?? extractPdfText)(bytes).catch((e: unknown) => {
+      readError("pdf text")(e);
+      return "";
+    });
     inputKind = text.replace(/\s/g, "").length >= MIN_TEXT_LAYER_CHARS ? "text_pdf" : "scanned_pdf";
     // Scanned PDFs have no local renderer yet; only a cloud model can read them.
     if (inputKind === "scanned_pdf") text = "";
   } else {
     inputKind = "image";
-    const ocr = await (deps.ocr ?? ocrImage)(bytes).catch(() => ({ text: "", confidence: 0 }));
+    const ocr = await (deps.ocr ?? ocrImage)(bytes).catch((e: unknown) => {
+      readError("ocr")(e);
+      return { text: "", confidence: 0 };
+    });
     text = ocr.text;
     ocrConfidence = ocr.confidence;
   }
@@ -130,7 +142,7 @@ export async function extractDocument(bytes: Uint8Array, deps: PipelineDeps): Pr
     document: { type: rules.documentType, input: inputKind },
   });
   // Don't cache a degraded result: retrying later (e.g. once Ollama runs) may do better.
-  if (!modelUnavailable) cacheExtraction(deps.db, fileHash, result);
+  if (!modelUnavailable && !readFailed) cacheExtraction(deps.db, fileHash, result);
   return { result, fileHash, cached: false };
 }
 
